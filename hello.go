@@ -20,22 +20,53 @@ package main			//package 为main， go install 会打包成可执行文件，在
 
 import (
 	"fmt"
-	"kwseeker.top/golearn/cmdline"
+	"kwseeker.top/golearn/file"
+	"os"
 )
 
 func main() {
 	fmt.Println("Hello, world.")
 
 	//===============================================================
-	//flag.Parse()
-	//fmt.Println("级别:", *levelFlag)
-	//fmt.Println("份数:", bnFlag)
-	pbi, pwi := cmdline.ParseArgs()
-	if pbi != nil {
-		fmt.Println("生日：", pbi.GetBirthDay())
+	////flag.Parse()
+	////fmt.Println("级别:", *levelFlag)
+	////fmt.Println("份数:", bnFlag)
+	//pbi, pwi := cmdline.ParseArgs()
+	//if pbi != nil {
+	//	fmt.Println("生日：", pbi.GetBirthDay())
+	//}
+	//if pwi != nil {
+	//	fmt.Println("工作列表：", pwi.GetWorkList())
+	//}
+
+	//===============================================================
+	path, err := file.GetCurrentPath()
+	if err != nil {
+		panic(err)
 	}
-	if pwi != nil {
-		fmt.Println("工作列表：", pwi.GetWorkList())
+	fmt.Println("Current path: ", path);
+
+	if isExist, _ := file.IsExist("test.txt"); !isExist {
+		fmt.Println("file is not exist")
+		_, err := os.Create("test.txt")
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		fmt.Println("file is already exist")
 	}
+
+	//fp, err := os.Open("test.txt")
+	fp, err := os.OpenFile("test.txt", os.O_APPEND|os.O_WRONLY,0666)
+	if err != nil {
+		panic(err)
+	}
+	defer fp.Close()
+	wb, err := fp.Write([]byte("This is a sentence in test.txt"))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("write %d bytes into test.txt\n", wb)
+	fmt.Println(file.ReadContentToString("test.txt"))
 
 }
