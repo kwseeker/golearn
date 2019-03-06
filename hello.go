@@ -18,14 +18,13 @@
 //package golearn		//package 不为main，go install 会打包成静态库，在 $GOPATH/pkg/<系统信息>/<包名>/<包静态库>
 package main			//package 为main， go install 会打包成可执行文件，在 $GOPATH/bin/下
 
-import (
-	"fmt"
-	"kwseeker.top/golearn/file"
-	"os"
-)
+import "github.com/kwseeker/golearn/concurrency"
 
 func main() {
-	fmt.Println("Hello, world.")
+
+	concurrency.TestRoutine()
+	//===============================================================
+	//fmt.Println("Hello, world.")
 
 	//===============================================================
 	////flag.Parse()
@@ -40,33 +39,33 @@ func main() {
 	//}
 
 	//===============================================================
-	path, err := file.GetCurrentPath()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Current path: ", path);
-
-	if isExist, _ := file.IsExist("test.txt"); !isExist {
-		fmt.Println("file is not exist")
-		_, err := os.Create("test.txt")
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		fmt.Println("file is already exist")
-	}
-
-	//fp, err := os.Open("test.txt")
-	fp, err := os.OpenFile("test.txt", os.O_APPEND|os.O_WRONLY,0666)
-	if err != nil {
-		panic(err)
-	}
-	defer fp.Close()
-	wb, err := fp.Write([]byte("This is a sentence in test.txt"))
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("write %d bytes into test.txt\n", wb)
-	fmt.Println(file.ReadContentToString("test.txt"))
+	//path, err := file.GetCurrentPath()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println("Current path: ", path);
+	//
+	//if isExist, _ := file.IsExist("test.txt"); !isExist {
+	//	fmt.Println("file is not exist")
+	//	_, err := os.Create("test.txt")
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//} else {
+	//	fmt.Println("file is already exist")
+	//}
+	//
+	////fp, err := os.Open("test.txt")
+	//fp, err := os.OpenFile("test.txt", os.O_APPEND|os.O_WRONLY,0666)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer fp.Close()
+	//wb, err := fp.Write([]byte("This is a sentence in test.txt"))
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Printf("write %d bytes into test.txt\n", wb)
+	//fmt.Println(file.ReadContentToString("test.txt"))
 
 }
