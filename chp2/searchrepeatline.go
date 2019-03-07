@@ -12,13 +12,11 @@ func main() {
 	fmt.Println("counts length: ", length)
 
 	input := bufio.NewScanner(os.Stdin)
-	lineNum := 0
 	for input.Scan() {					//input.Scan() 是否有值
 		if input.Text() == "EOF" {
 			break
 		}
-		lineNum ++
-		counts[input.Text()] += lineNum
+		counts[input.Text()]++
 	}
 
 	length2 := len(counts)
