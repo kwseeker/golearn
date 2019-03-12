@@ -283,11 +283,54 @@ func reverse(s []int)  {
 
 #### 5.3 Map
 
+map的分配及初始化
+```
+ages := make(map[string]int)
+ages := map[string]int {    //其实和数组的初始化还是挺像的，不过一个是数字做索引，一个使用字符串做key
+    "alice": 21,
+    "charlie": 22,
+}
+ages["alice"] = 21  //上面等同于
+ages["charlie"] = 22
+map[string]int{}    //创建空的map，但不是nil
+```
+
+map的常用操作
++ 添加新的键值对/为已有键赋值
++ 判断键是否存在并取值
++ 删除键值对
++ map遍历
++ 比较两个map是否相等
+
+Go里面没有Set类型，而是以Map的key替代的。
+
+
+
+
 #### 5.4 结构体
 
 #### 5.5 JSON
 
 #### 5.6 文本和HTML模版
+
+#### 5.7 指针
+
+Go 语言为程序员提供了控制数据结构的指针的能力；但是，你不能进行指针运算。
+通过给予程序员基本内存布局，Go 语言允许你控制特定集合的数据结构、分配的数量以及内存访问模式，
+这些对构建运行良好的系统是非常重要的：指针对于性能的影响是不言而喻的，
+而如果你想要做的是系统编程、操作系统或者网络应用，指针更是不可或缺的一部分。
+
+!!! 对Go和C指针使用上的异同，参考前面的链接，整体上很像。
+但是从功能, Go的指针是一个丢失了灵魂技能的"伪指针"，因为不支持指针运算，
+导致"内存偏移"这一便捷快速的操作无法使用。
+
+需要注意的几点：
+
+1）Go指针不允许指针运算，因为使用不当的话，很容易造成内存泄漏以及程序崩溃。
+
+2）Go语言不能获取const常量的地址，因为const常量是不允许修改的。
+
+
 
 ## 6 函数
 
@@ -305,11 +348,36 @@ func reverse(s []int)  {
 
 #### 6.7 可变参数
 
-#### 6.8 Deferred函数
+#### 6.8/9/10 Deferred Panic Recover 错误处理机制
 
-#### 6.9 Panic异常
+Go不推荐使用异常处理；
 
-#### 6.10 Recover捕获异常
+Go的设计者认为try/catch机制太过耗费资源，所以提供了更轻量级的异常处理机制，
+且只推荐作为处理错误（普通的异常而非错误就不要用）的最终措施。
+
+错误定义(可以参考Go源码的实现，如：os error.go)
+```
+//使用errors.New定义
+var (
+	ErrInvalid    = errors.New("invalid argument") // methods on File will return this error when the receiver is nil
+	ErrPermission = errors.New("permission denied")
+	ErrExist      = errors.New("file already exists")
+	ErrNotExist   = errors.New("file does not exist")
+	ErrClosed     = errors.New("file already closed")
+)
+//自定义错误数据结构
+type MyError struct {
+	Operation string
+	Err error	// error接口有一个 Error()方法 要实现
+}
+//用fmt创建错误对象
+if f < 0 {
+    return 0, fmt.Errorf("some error happened")
+}
+```
+
+
+
 
 ## 7 方法
 
@@ -328,6 +396,8 @@ func reverse(s []int)  {
 ## 8 接口
 
 #### 8.1 接口是合约
+
+
 
 #### 8.2 接口类型
 
