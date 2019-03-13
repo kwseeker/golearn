@@ -252,7 +252,7 @@ const {
 更多的是使用Slice，因为Slice可以动态增长和收缩，使用更方便灵活。
 ```
 var v1 [3]int
-symbol := [...]string {USD: "$", EUR: "€", GBP: "￡", RMB: "￥"}
+symbol := [...]string {USD: "$", EUR: "€", GBP: "￡", RMB: "￥"}  //这个也是数组
 r := [...]int{99: -1}
 ```
 
@@ -264,6 +264,8 @@ fmt.Print(r)            // "[...]"
 ```
 
 #### 5.2 Slice
+
+Slice 和 数组 的区别在于Slice没有固定长度，一般表示为 []T， 而数组必须指定长度。
 
 fmt.Println() 可以直接打印数组和Slice的值。
 
@@ -278,7 +280,30 @@ func reverse(s []int)  {
 }
 ```
 
-数组可以使用"比较"两个数组的值是否完全相同，但是Slice不可以这么做。
+数组可以使用“==”比较两个数组的值是否完全相同；但是Slice不可以这么做，只能逐个元素比较。
+```
+func equal(x, y []string) bool {        //x, y 都是 []string
+	if len(x) != len(y) {
+		return false
+	}
+	for i:= range x {                   // i,_
+		if x[i] != y[i] {
+			return false
+		}
+	}
+	return true
+}
+```
+
+可以使用make()内建函数创建指定元素类型、长度、容量的Slice。
+```
+make([]T, len)
+make([]T, len, cap)
+```
+
+Slice 添加新的元素规则：如果添加新的元素后，元素个数未超出容量，则直接拓展，然后赋值即可；
+否则需要先make重新分配空间，然后拷贝原Slice，然后继续拓展赋值。
+
 
 
 #### 5.3 Map
@@ -376,6 +401,12 @@ if f < 0 {
 }
 ```
 
+类型断言
+```
+if e, ok := err.(*os.PathError); ok {   //err.(*os.PathError) err是否是*os.PathError类型
+    // remedy situation
+}
+```
 
 
 
@@ -397,9 +428,24 @@ if f < 0 {
 
 #### 8.1 接口是合约
 
+```
+package fmt
 
+type Stringer interface {
+    String() string
+}
+```
 
 #### 8.2 接口类型
+
+接口的继承
+```
+type ReadWriter interface {
+    Reader
+    Writer
+}
+```
+
 
 #### 8.3 实现接口的条件
 
