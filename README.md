@@ -334,6 +334,17 @@ Go里面没有Set类型，而是以Map的key替代的。
 
 #### 5.4 结构体
 
+结构体的定义，成员可以是任何类型（如基本数据类型，复杂数据类型，结构体本身，函数，接口）
+```
+type Test struct {
+
+}
+```
+
+结构体变量与赋值
+
+
+
 #### 5.5 JSON
 
 #### 5.6 文本和HTML模版
@@ -372,6 +383,42 @@ Go 语言为程序员提供了控制数据结构的指针的能力；但是，�
 #### 6.6 匿名函数
 
 #### 6.7 可变参数
+
+定义一个可变长度参数的函数;
+原理是将变长的参数存储在一个数组中，下面类似于 arg []int;
+只需要像操作数组一样操作arg即可。
+```
+func function(arg ...int) {
+    //...
+}
+```
+
+如果函数的参数类型比较多且不确定，可以使用空接口 interface{} 处理。
+```
+func checkType(values ... interface{}) {
+	for i, value := range values {
+		switch value := value.(type) {
+		case int:
+			fmt.Println(i, "int:", value)
+			break
+		case float64:
+			fmt.Println(i, "float64:", value)
+			break
+		case float32:
+			fmt.Println(i, "float32:", value)
+			break
+		case string:
+			fmt.Println(i, "string:", value)
+			break
+		case bool:
+			fmt.Println(i, "bool:", value)
+		default:
+			fmt.Println(i, "other type:", value)
+		}
+	}
+}
+checkType(1, 1.2, true, "Arvin")
+```
 
 #### 6.8/9/10 Deferred Panic Recover 错误处理机制
 
@@ -446,8 +493,9 @@ type ReadWriter interface {
 }
 ```
 
-
 #### 8.3 实现接口的条件
+
+
 
 #### 8.4 flag.Value接口
 
