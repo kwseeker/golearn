@@ -336,13 +336,39 @@ Go里面没有Set类型，而是以Map的key替代的。
 
 结构体的定义，成员可以是任何类型（如基本数据类型，复杂数据类型，结构体本身，函数，接口）
 ```
-type Test struct {
+//详见 struct.go
+type Human struct {
+    //基本数据类型
+    name string
+    age int
+    height, weight float32
 
+    //复杂数据类型
+    hobby map[string]string
+
+    //结构体
+    girlFriend *Human	//结构体内部包含结构体自身变量，必须使用指针，不然无法确定结构体大小报异常
+
+    //接口,函数，方法都通过接收者指定
+}
+```
+
+TODO：下面两种结构体方法的区别？
+```
+//内部函数
+func (person Human) live() {
+	fmt.Println(person.name + " love music, movie, game!")
+}
+
+//方法
+func (person *Human)work()  {
+	fmt.Println(person.name + " dreaming to make a masterpiece!")
 }
 ```
 
 结构体变量与赋值
 
+参考 struct.go line:53-59
 
 
 #### 5.5 JSON
@@ -475,6 +501,8 @@ if e, ok := err.(*os.PathError); ok {   //err.(*os.PathError) err是否是*os.Pa
 
 #### 8.1 接口是合约
 
+接口命名规范：
+对于只有一个方法的接口，接口名使用方法名加(e)r命名。
 ```
 package fmt
 
@@ -483,9 +511,13 @@ type Stringer interface {
 }
 ```
 
+接口多态
+
+接口变量可以接收任意实现接口方法的结构体变量从而产生不同的行为。
+
 #### 8.2 接口类型
 
-接口的继承
+接口的嵌套（继承）
 ```
 type ReadWriter interface {
     Reader

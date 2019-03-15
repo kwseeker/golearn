@@ -43,6 +43,10 @@ func main()  {
 	ages["Arvin"] = 21
 	ages["Blank"] = 22
 	ages["Cindy"] = 23
+
+	//上面可以简写为
+	//ages := map[string]int{"Arvin":21, "Blank":22, "Cindy":23}
+
 	//修改某个键值对
 	ages["Arvin"] = 24
 	for name, age := range ages {
