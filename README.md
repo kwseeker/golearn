@@ -353,7 +353,16 @@ type Human struct {
 }
 ```
 
-TODO：下面两种结构体方法的区别？
+下面两种结构体方法的区别（对结构体而言没区别），《Go入门指南》上的解释（虽然是针对接口讲的但是有点不同同样适用）
+
+1）指针方法可以通过指针调用；
+
+2）值方法可以通过值调用；
+
+3）接收者是值的方法可以通过指针调用，因为指针会首先被解引用；
+
+4）(针对接口方法)接收者是指针的方法不可以通过值调用，因为存储在接口中的值没有地址。
+   (针对结构体方法)接收者是指针的方法可以通过值调用，因为可以获取值的地址传入指针。
 ```
 //内部函数
 func (person Human) live() {
@@ -364,6 +373,17 @@ func (person Human) live() {
 func (person *Human)work()  {
 	fmt.Println(person.name + " dreaming to make a masterpiece!")
 }
+
+//值方法测试
+someone3 := &Human{"Alice", 25, 170, 60, map[string]string{"sing":"high", "draw":"high"}, nil}
+someone3.live()
+someone4 := *someone3
+someone4.live()
+//指针方法测试
+someone := Human{"Alice", 25, 170, 60, map[string]string{"sing":"high", "draw":"high"}, nil}
+someone.work()
+someone2 := &someone
+someone2.work()
 ```
 
 结构体变量与赋值
@@ -515,6 +535,38 @@ type Stringer interface {
 
 接口变量可以接收任意实现接口方法的结构体变量从而产生不同的行为。
 
+接口类型断言(变量是接口的变量类型断言)
+```
+val.(type)  //type可以是结构体，指针，接口，基本数据类型以及nil, 特别注意返回值是val
+```
+通过断言接口的类型，可以知道接口变量的具体类型以及全部的功能。
+
+type-switch (TODO：是不是已经不同于普通的switch了？type-switch val.(type)返回val本身，case却是val的类型，不知编译器是如何处理的)
+```
+switch value := val.(type) {
+    case *Square:
+        //...
+    case *Circle:
+        //...
+    case nil:
+        //...
+    default:
+        //...
+}
+```
+注意Go的switch语句中跳出case不需要break。
+如果需要分组处理，case后面可以接入多个值以逗号分隔。
+```
+switch val {
+    case 1,2:
+        //...
+    case 3,4,5:
+        //...
+    default:
+        //...
+}
+```
+
 #### 8.2 接口类型
 
 接口的嵌套（继承）
@@ -524,6 +576,22 @@ type ReadWriter interface {
     Writer
 }
 ```
+
+空接口（非常重要），类似Java中Object般的存在
+```
+type Any interface{}    //可以接收任何类型
+```
+
+数据读写接口（相关包：io bufio）
+
+数据载体：文件、缓存、标准输入输出错误、网络连接、管道。
+
+1) 读取标准输入（fmt包 bufio包）
+
+2）读写文件，文件拷贝
+
+3）用Gob传输数据
+
 
 #### 8.3 实现接口的条件
 

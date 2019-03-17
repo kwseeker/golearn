@@ -75,4 +75,15 @@ func main() {
 	myGirlSkill= me.girlFriend
 	myGirlSkill.program()
 	fmt.Println(myGirlSkill.cook("beef", "onion"))
+
+	//值方法测试
+	someone3 := &Human{"Alice", 25, 170, 60, map[string]string{"sing":"high", "draw":"high"}, nil}
+	someone3.live()
+	someone4 := *someone3
+	someone4.live()
+	//指针方法测试
+	someone := Human{"Alice", 25, 170, 60, map[string]string{"sing":"high", "draw":"high"}, nil}
+	someone.work()
+	someone2 := &someone
+	someone2.work()
 }

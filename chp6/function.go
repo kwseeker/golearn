@@ -10,16 +10,12 @@ func checkType(values ... interface{}) {
 		switch value := value.(type) {
 		case int:
 			fmt.Println(i, "int:", value)
-			break
 		case float64:
 			fmt.Println(i, "float64:", value)
-			break
 		case float32:
 			fmt.Println(i, "float32:", value)
-			break
 		case string:
 			fmt.Println(i, "string:", value)
-			break
 		case bool:
 			fmt.Println(i, "bool:", value)
 		default:
