@@ -165,16 +165,21 @@ const {
 }
 ```
 
-
-
-
 #### 2.4 GIF动画
 
-#### 2.5 获取URL
+主要用到image包，可以生成一系列bit-mapped图，然后将其编码为一个GIF动画。
+
+后面有用到地话再研究。
+
+#### 2.5 请求URL
+
+主要使用"net/http"、"io/ioutil"这两个包。
 
 #### 2.6 并发获取多个URL
 
 #### 2.7 Web服务
+
+主要是"net/http"包，写Go的Web应用必须详细理解这个包的实现。
 
 ## 3 程序结构
 
@@ -623,7 +628,15 @@ type Any interface{}    //可以接收任何类型
 
 ## 9 Goroutines 和 Channels
 
+Go实现并发的两种方式：goroutine 和 channel。
+
+CSP并发编程模型 与 多线程共享内存并发模型
+
+并发程序的风险与陷阱
+
 #### 9.1 Goroutines
+
+
 
 #### 9.2 示例：并发的Clock服务
 
