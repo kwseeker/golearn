@@ -8,6 +8,8 @@
 
 [Go编程语言规范](https://golang.org/ref/spec#Introduction)
 
+如何將一個工程組織成一繫列的包，如果獲取，構建，測試，性能測試，剖析，寫文檔，併且將這些包分享出去。
+
 ## 1 Go 与 Java
 Go是直接编译成机器语言，可以直接运行，Java是解释执行语言需要依赖JVM运行；
 
@@ -628,21 +630,103 @@ type Any interface{}    //可以接收任何类型
 
 ## 9 Goroutines 和 Channels
 
+Go原生支持应用之间的通信（网络，客户端和服务端、分布式计算）；
+不要通过共享内存来通信，而通过通信来共享内存。
+
 Go实现并发的两种方式：goroutine 和 channel。
 
 CSP并发编程模型 与 多线程共享内存并发模型
 
 并发程序的风险与陷阱
 
+goroutine的同步措施
+
+虽然可以使用sync包来同步，但是Go不推荐这么做，而是推荐使用channels来同步goroutine。
+TODO：sync和channel内部实现的区别？
+
+Go并发程序实现
+1) goroutine创建
+2) goroutine间的通信（接发消息）
+
+
 #### 9.1 Goroutines
 
+Go里面的并发执行单元，相当于Java的线程。但是两者也是有区别的。
+goroutine的栈空间是可以动态地伸缩的(2K-2G)，而操作系统的线程栈一般都是2MB，
+像Java这种1对1依托OS内核线程实现的线程线程栈基本也是2M，
+因此goroutine的内存空间使用效率更高。
 
+goroutine和应用线程的调度区别
+
+应用线程依托于内核线程实现并被系统内核调度，线程调度需要频繁地将线程状态在内存与寄存器间进行存取，
+而这个过程很慢，而goroutine虽然也是依托内核线程但是是复用内核线程实现的，而Go实现了自己的调度器
+对这些复用内核线程的goroutine进行调度，避免了频繁地将数据从内存和寄存器之间进行转移。
+
+goroutine的m:n调度？在n个内核线程上多工调度m个goroutine。
+具体是怎么实现的？与其类似的其他编程语言的协程的实现（Go协程与其他语言协程的区别），以及netty的多线程模型实现。
+
+GOMAXPROCS
+
+Go的調度器使用了一個叫做GOMAXPROCS的變量來決定會有多少個操作繫統的線程同時執行Go的代碼，
+刚才还在疑问goroutine也是依托于内核线程实现的，那么如果两个goroutine在两个不同的内核线程上执行
+切换不还是会很耗资源么？GOMAXPROCS的规则解答了这一疑问。GOMAXPROCS一般与机器的CPU核心个数相等；
+而不同的核心上的线程是并发是不需要在内存和寄存器间来回切换。
+
+可以理解为在一个计算机CPU核心上Go只使用一个内核线程执行goroutine的线程。
+TODO：但是为何《Go入门指南》中14.1.3章节中实验现象却与这条理论有点不符？
+
+注意main也是一个goroutine。
+
+```
+# 命令行中使用 GOMAXPROCS 设置执行goroutine使用的内核线程数量
+$ GOMAXPROCS=1 go run hacker.go
+```
+
+goroutine为了防止 tread-local storage 被滥用没有提供ID号。
+
+TODO：进程与线程的关系
+
+忠告：不要使用全局变量或者共享内存，它们会给你的代码在并发运算的时候带来危险，导致一些无法重现或者随机的结果（竞态）。
+
+Go中对不同goroutine进行同步更推荐于使用其他方式，如Communicating Sequential Processes（顺序通信处理，CSP，C.Hoare发明），
+message passing-model（消息传递，在其他语言中有使用，如以处理并发有名的Erlang）。
+
+TODO：什么是顺序通信处理？
+
+runtime.Gosched()
+
+Go main协程退出后，并不会等待内部创建的goroutine执行完成，也不会像Java那样将线程托管给1号线程。
 
 #### 9.2 示例：并发的Clock服务
 
 #### 9.3 示例：并发的Echo服务
 
 #### 9.4 Channels
+
+Go的通道channel类似于管道pipe，回顾下操作系统进/线程通信方式：
+```
+管道（pipe）,流管道(s_pipe)和有名管道（FIFO）
+信号（signal）
+消息队列
+共享内存
+信号量
+套接字（socket)
+```
+
+通道用于值的交换，是同步的。
+
+通信操作符
+```
+var ch1 chan string
+ch1 = make(chan string)
+ch1 <- int1
+int2 := <- ch1
+<- ch1      //单独取值的话会取下一个值，当前值会被丢弃
+```
+
+通道阻塞
+
+goroutinebasic.go中的问题引出Go通道阻塞的思考。
 
 #### 9.5 并发的循环
 
