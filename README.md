@@ -433,7 +433,61 @@ Go 语言为程序员提供了控制数据结构的指针的能力；但是，�
 
 #### 6.5 函数值
 
+将函数作为参数
+
+函数可以作为其它函数的参数进行传递，然后在其它函数内调用执行，一般称之为回调。
+```
+func main() {
+    callback(1, Add)
+}
+
+func Add(a, b int) {
+    fmt.Printf("The sum of %d and %d is: %d\n", a, b, a+b)
+}
+
+func callback(y int, f func(int, int)) {
+    f(y, 2) // this becomes Add(1, 2)
+}
+```
+
 #### 6.6 匿名函数
+
+匿名函数又称闭包，匿名函数可以赋值给变量，然后通过变量调用。
+```
+g := func(i int) { fmt.Printf("%d ", i) } //此例子中只是为了演示匿名函数可分配不同的内存地址，在现实开发中，不应该把该部分信息放置到循环中。
+g(i)
+```
+
+闭包被允许调用定义在其它环境下的变量。闭包可使得某个函数捕捉到一些外部状态，
+例如：函数被创建时的状态。另一种表示方式为：一个闭包继承了函数所声明时的作用域。
+这种状态（作用域内的变量）都被共享到闭包的环境中，因此这些变量可以在闭包中被操作，
+直到被销毁。
+
+将闭包赋值给一个变量，每次通过这个变量调用闭包函数，闭包中的变量都是共享的保持累加的。
+```
+func Adder() func(int) int {
+	var x int
+	return func(delta int) int {
+		x += delta
+		return x
+	}
+}
+
+var f = Adder()				//f中保持一个局部变量x，对每一次调用x都是共享的
+fmt.Print(f(1), " - ")
+fmt.Print(f(20), " - ")
+fmt.Print(f(300))
+```
+
+!!!闭包的使用场景
+
+关键字 defer （详见第 6.4 节）经常配合匿名函数使用，它可以用于改变函数的命名返回值。
+关键字 defer（类似Java的finally）允许我们推迟到函数返回之前（或任意位置执行 return 语句之后）一刻才执行某个语句或函数（为什么要在返回之后才执行这些语句？
+因为 return 语句同样可以包含一些操作，而不是单纯地返回某个值）。
+
+匿名函数还可以配合 go 关键字来作为 goroutine 使用。
+
+闭包处理混合对象
 
 #### 6.7 可变参数
 
@@ -693,9 +747,30 @@ message passing-model（消息传递，在其他语言中有使用，如以处�
 
 TODO：什么是顺序通信处理？
 
+DONE：如何获取 goroutine 的执行状态与结果？
+
+章节14.2.6提出可以使用通道返回执行结果。
+
+TODO: main协程如何优雅的等待？
+参考9.4信号量模式。利用无缓存通道阻塞特性实现。
+
 runtime.Gosched()
 
 Go main协程退出后，并不会等待内部创建的goroutine执行完成，也不会像Java那样将线程托管给1号线程。
+
+计时器 Ticker (time/tick.go) 定时器 Timer (time/sleep.go)
+
+在协程周期性的执行一些事情（打印状态日志，输出，计算等等）的时候非常有用。
+```
+func Tick(d Duration) <-chan Time
+func After(d Duration) <-chan Time
+func AfterFunc(d Duration, f func()) *Timer
+func (t *Timer) Reset(d Duration) bool
+func (t *Timer) Stop() bool
+```
+
+协程和恢复（recover）
+
 
 #### 9.2 示例：并发的Clock服务
 
@@ -724,15 +799,83 @@ int2 := <- ch1
 <- ch1      //单独取值的话会取下一个值，当前值会被丢弃
 ```
 
+带有方向的通道，通过使用方向注解来限制协程对通道的操作。
+```
+var send_only chan<- int         // channel can only receive data
+var recv_only <-chan int        // channel can onley send data
+```
+
+通道的关闭
+
+只有在当需要告诉接收者不会再提供新的值的时候，才需要关闭通道。
+只有发送者需要关闭通道，接收者永远不会需要。
+通道关闭后再进行写入或关闭都会panic。
+for range 读取通道的值会自动检测通道是否关闭。
+```
+//关闭通道
+close(ch)
+//检测通道状态
+input, open := <-ch
+if !open {
+    break
+}
+//for range 读取通道
+for input := range ch {
+    //process(input)
+}
+```
+
 通道阻塞
 
 goroutinebasic.go中的问题引出Go通道阻塞的思考。
+
+默认情况下发送数据是同步且无缓冲的，没有接收者接收数据，发送者就会阻塞在那里一直等待接收者接收。
+对于接收者也是如此，如果没有数据，接收者一直会等在那里，直到有发送者发送信息。
+
+使用带缓冲的通道可以缓解等待问题（缓冲区满后继续发送以及缓冲区空后继续接受同样会阻塞），缓冲就像快递柜一样。
+所以这里仍旧需要考虑，TODO：缓冲区满后继续发送以及缓冲区空继续接受如何处理的问题。
+```
+bufSize := 100      //快递柜的容量
+ch := make(chan string, bufSize)
+```
+
+使用无缓冲的通道可以实现两个goroutine之间的同步。
+
+Go使用通道实现信号量模式
+
+for 循环的 range 语句可以用在通道 ch 上，便可以从通道中获取值。
+同样在通道中没有数据的时候会阻塞，除了通道关闭否则不会退出。
+```
+for v := range ch {
+    fmt.Printf("The value is %v\n", v)
+}
+```
 
 #### 9.5 并发的循环
 
 #### 9.6 示例：并发的web爬虫
 
 #### 9.7 基于select的多路复用
+
+```
+select {
+case u:= <- ch1:
+        ...
+case v:= <- ch2:
+        ...
+        ...
+default: // no value ready to be received
+        ...
+}
+```
+
+select 做的就是：选择处理列出的多个通信情况中的一个。
+
+如果都阻塞了，会等待直到其中一个可以处理；如果多个可以处理，随机选择一个；
+如果没有通道操作可以处理并且写了 default 语句，它就会执行：default 永远是可运行的（这就是准备好了，可以执行）。
+
+在 select 中使用发送操作并且有 default可以确保发送不被阻塞！如果没有 case，select 就会一直阻塞。
+select 语句实现了一种监听模式，通常用在（无限）循环中；在某种情况下，通过 break 语句使循环退出。
 
 #### 9.8 示例：并发的字典遍历
 
